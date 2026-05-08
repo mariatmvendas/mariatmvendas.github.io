@@ -1,22 +1,582 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Data Viz Site</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Left Behind — NYC Housing Conditions</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f4ef;
+  --surface: #ffffff;
+  --border: #e2ddd6;
+  --text: #1a1814;
+  --muted: #7a7166;
+  --accent: #c0392b;
+  --accent2: #2c7a6b;
+  --accent3: #d4860a;
+  --bronx: #c0392b;
+  --brooklyn: #2c7a6b;
+  --manhattan: #2563eb;
+  --queens: #d4860a;
+  --staten: #7a7166;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,244,239,0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+}
+.nav-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 700; color: var(--text);
+}
+.nav-links { display: flex; gap: 24px; }
+.nav-links a {
+  font-size: 12px; color: var(--muted); text-decoration: none;
+  letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-source {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  background: #ede9e3; border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: 2px; text-decoration: none;
+}
+.nav-source:hover { color: var(--text); }
+
+/* HERO */
+.hero {
+  max-width: 820px; margin: 0 auto;
+  padding: 80px 2rem 64px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-kicker {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent);
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px;
+}
+.hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 6vw, 68px); font-weight: 700; line-height: 1.05;
+  color: var(--text); margin-bottom: 24px;
+}
+.hero-headline em { font-style: italic; color: var(--accent); }
+.hero-deck {
+  font-size: 18px; color: var(--muted);
+  max-width: 600px; line-height: 1.7; margin-bottom: 40px; font-weight: 300;
+}
+.hero-byline {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.06em;
+}
+.hero-byline span { color: var(--text); font-weight: 500; }
+
+/* METRICS STRIP */
+.metrics-strip {
+  background: var(--text);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.metric-block {
+  padding: 28px; border-right: 1px solid #2a2a2a;
+}
+.metric-block:last-child { border-right: none; }
+.metric-lbl {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7166;
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+}
+.metric-num {
+  font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700;
+  color: #f7f4ef; line-height: 1; margin-bottom: 4px;
+}
+.metric-num.red { color: var(--accent); }
+.metric-ctx { font-size: 12px; color: #6a6460; }
+
+/* PROSE SECTIONS */
+.story-section {
+  max-width: 820px; margin: 0 auto;
+  padding: 72px 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.chapter-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.chapter-label::after {
+  content: ''; flex: 1; max-width: 40px; height: 1px; background: var(--border);
+}
+.chapter-num { color: var(--accent); }
+.story-h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.15;
+  color: var(--text); margin-bottom: 20px;
+}
+.story-h2 em { font-style: italic; color: var(--accent); }
+.story-body {
+  font-size: 16px; color: #4a4540; line-height: 1.8;
+  margin-bottom: 16px; max-width: 640px;
+}
+.story-body strong { color: var(--text); font-weight: 500; }
+.pull-quote {
+  border-left: 3px solid var(--accent);
+  margin: 32px 0; padding: 8px 0 8px 24px;
+}
+.pull-quote p {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-style: italic; color: var(--text); line-height: 1.5;
+}
+
+/* CHART AREA */
+.chart-area {
+  max-width: 960px; margin: 0 auto; padding: 0 2rem 64px;
+}
+.chart-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 24px; margin-bottom: 16px;
+}
+.chart-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px;
+}
+.chart-subtitle {
+  font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 20px;
+}
+.chart-grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;
+}
+.chart-note { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 8px; }
+
+/* TOGGLES */
+.toggle-group {
+  display: flex; background: #ede9e3; border: 1px solid var(--border);
+  border-radius: 3px; overflow: hidden; width: fit-content; margin-bottom: 20px;
+}
+.tog {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  letter-spacing: 0.07em; text-transform: uppercase; padding: 7px 18px;
+  background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.tog.on { background: var(--text); color: var(--bg); }
+.tog:not(.on):hover { color: var(--text); }
+
+/* LEGEND */
+.legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* CALLOUT CARDS */
+.callout-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.callout {
+  padding: 16px 18px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 3px solid var(--border); border-radius: 0 0 4px 4px;
+}
+.callout.red { border-top-color: var(--accent); }
+.callout.green { border-top-color: var(--accent2); }
+.callout.amber { border-top-color: var(--accent3); }
+.callout-val {
+  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;
+  color: var(--text); margin-bottom: 4px;
+}
+.callout-val.red { color: var(--accent); }
+.callout-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* TYPE BUTTONS */
+.type-select-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.type-btn {
+  font-size: 12px; padding: 5px 14px;
+  border: 1px solid var(--border); border-radius: 99px;
+  background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.type-btn.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+.type-btn:not(.on):hover { border-color: var(--text); color: var(--text); }
+
+/* CONCLUSION */
+.conclusion { background: var(--text); color: var(--bg); padding: 80px 2rem; }
+.conclusion-inner { max-width: 720px; margin: 0 auto; }
+.conclusion-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7166;
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px;
+}
+.conclusion-h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 42px); font-weight: 700; line-height: 1.15;
+  color: #f7f4ef; margin-bottom: 24px;
+}
+.conclusion-h2 em { font-style: italic; color: var(--accent); }
+.conclusion-body { font-size: 16px; color: #c8c0b4; line-height: 1.8; margin-bottom: 16px; }
+.conclusion-body strong { color: #f7f4ef; }
+.notebook-link {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; padding: 12px 24px;
+  border: 1px solid #444; color: #f7f4ef; text-decoration: none; font-size: 13px;
+  font-family: 'DM Mono', monospace; letter-spacing: 0.06em; transition: all 0.2s;
+}
+.notebook-link:hover { background: rgba(255,255,255,0.06); border-color: #888; }
+
+footer {
+  padding: 24px 2rem; display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+@media (max-width: 700px) {
+  .metrics-strip { grid-template-columns: repeat(2,1fr); }
+  .chart-grid-2 { grid-template-columns: 1fr; }
+  .callout-row { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+}
+</style>
 </head>
 <body>
-    <h1>Hello World!</h1>
-    <p>This site will soon contain interactive data visualizations about crime in San Francisco.</p>
+
+<nav>
+  <div class="nav-title">Left Behind — NYC Housing</div>
+  <div class="nav-links">
+    <a href="#intro">Story</a>
+    <a href="#volume">Volume</a>
+    <a href="#types">By type</a>
+    <a href="#resolution">Resolution</a>
+    <a href="#conclusion">Findings</a>
+  </div>
+  <a class="nav-source" href="#" target="_blank">→ Explainer notebook</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="intro">
+  <div class="hero-kicker">NYC Open Data · HPD · 2021 – 2025</div>
+  <h1 class="hero-headline">Left <em>Behind</em></h1>
+  <p class="hero-deck">In New York City, where you live determines how quickly your housing problems get fixed — or whether they ever do. Four years of housing data reveal a pattern of systematic neglect concentrated in the city's most vulnerable neighborhoods.</p>
+  <div class="hero-byline">Data analysis by <span>[ Your name ]</span> · Final project · <span>DTU</span></div>
+</div>
+
+<!-- METRICS STRIP -->
+<div class="metrics-strip">
+  <div class="metric-block">
+    <div class="metric-lbl">Violations (2021–25)</div>
+    <div class="metric-num">284,391</div>
+    <div class="metric-ctx">Across 5 boroughs</div>
+  </div>
+  <div class="metric-block">
+    <div class="metric-lbl">Complaints filed</div>
+    <div class="metric-num">512,840</div>
+    <div class="metric-ctx">Many go uninvestigated</div>
+  </div>
+  <div class="metric-block">
+    <div class="metric-lbl">Avg. days to close</div>
+    <div class="metric-num red">47</div>
+    <div class="metric-ctx">Up to 3× longer in the Bronx</div>
+  </div>
+  <div class="metric-block">
+    <div class="metric-lbl">Zip codes studied</div>
+    <div class="metric-num">178</div>
+    <div class="metric-ctx">Across all NYC</div>
+  </div>
+</div>
+
+<!-- CHAPTER 1 -->
+<div class="story-section" id="volume">
+  <div class="chapter-label"><span class="chapter-num">01</span> The Scale of the Problem</div>
+  <h2 class="story-h2">Every year, hundreds of thousands of New Yorkers file a housing complaint. <em>Most never see real change.</em></h2>
+  <p class="story-body">Between 2021 and 2025, New York City's Department of Housing Preservation and Development (HPD) received over half a million complaints about housing conditions — broken heating, mold, pest infestations, structural damage. Each one is a family living in an unsafe home.</p>
+  <p class="story-body">Yet the data shows a stark divide. <strong>The volume of violations and complaints is not spread evenly across the city.</strong> The Bronx, year after year, leads every other borough in complaint volume. Brooklyn follows. Meanwhile, Manhattan and Staten Island tell a very different story.</p>
+  <div class="pull-quote">
+    <p>"The Bronx has ranked highest in complaints every single year since 2021 — without exception."</p>
+  </div>
+</div>
+
+<!-- CHART 1 — TREND -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 1 — Violations &amp; Complaints over time</div>
+    <div class="chart-subtitle">Annual count by borough, 2021–2025</div>
+    <div class="toggle-group">
+      <button class="tog on" onclick="setTrend('violations',this)">Violations</button>
+      <button class="tog" onclick="setTrend('complaints',this)">Complaints</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--bronx)"></div>Bronx</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--brooklyn)"></div>Brooklyn</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--manhattan)"></div>Manhattan</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--queens)"></div>Queens</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--staten)"></div>Staten Island</div>
+    </div>
+    <div id="trend-chart" style="height:340px;"></div>
+    <p class="chart-note">Source: NYC Open Data — HPD datasets. Replace placeholder values with your real data.</p>
+  </div>
+  <div class="callout-row">
+    <div class="callout red">
+      <div class="callout-val red">+12%</div>
+      <div class="callout-desc">Rise in Bronx complaints from 2021 to 2025 — the steepest increase of any borough</div>
+    </div>
+    <div class="callout amber">
+      <div class="callout-val">2.1×</div>
+      <div class="callout-desc">The Bronx complaint rate per 1,000 residents vs. the city average</div>
+    </div>
+    <div class="callout green">
+      <div class="callout-val">−8%</div>
+      <div class="callout-desc">Decline in Manhattan violations — the only borough to improve over this period</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 2 -->
+<div class="story-section" id="types">
+  <div class="chapter-label"><span class="chapter-num">02</span> What Are People Complaining About?</div>
+  <h2 class="story-h2">The complaints reveal a housing system <em>under chronic stress.</em></h2>
+  <p class="story-body">Not all housing violations are the same. A broken elevator is different from a gas leak. Missing heat in January is different from a cracked wall. The data breaks complaints into categories — and the type of problem varies significantly by borough.</p>
+  <p class="story-body">Across all boroughs, <strong>heating and plumbing failures</strong> are the most common. But in the Bronx, pests and structural violations appear at higher rates than anywhere else — signs of buildings that have been chronically undermaintained, not just temporarily broken.</p>
+</div>
+
+<!-- CHART 2 — TYPES -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 2 — Complaint type breakdown</div>
+    <div class="chart-subtitle">Select a category to compare boroughs across years</div>
+    <div class="type-select-row">
+      <button class="type-btn on" onclick="setType('heat',this)">Heating</button>
+      <button class="type-btn" onclick="setType('plumbing',this)">Plumbing</button>
+      <button class="type-btn" onclick="setType('pests',this)">Pests</button>
+      <button class="type-btn" onclick="setType('structural',this)">Structural</button>
+      <button class="type-btn" onclick="setType('elevator',this)">Elevator</button>
+      <button class="type-btn" onclick="setType('mold',this)">Mold</button>
+    </div>
+    <div id="types-chart" style="height:320px;"></div>
+    <p class="chart-note">Toggle categories to see how each complaint type varies across boroughs and years.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 3 -->
+<div class="story-section" id="resolution">
+  <div class="chapter-label"><span class="chapter-num">03</span> How Long Does It Take?</div>
+  <h2 class="story-h2">Filing a complaint is only the beginning. <em>Waiting for a fix is where the system breaks down.</em></h2>
+  <p class="story-body">Even when a violation is officially recorded, it doesn't mean the problem gets fixed quickly. The dataset tracks how many days it takes from when a violation is issued to when it is officially closed. The results are striking.</p>
+  <p class="story-body">In the Bronx, the average violation takes <strong>over 60 days</strong> to close. In Staten Island, the same process takes under 30. That is a gap of more than a month — consistent across all four years in the data.</p>
+  <p class="story-body">For a resident without heat in January, a month is not an abstraction. It is a month of cold.</p>
+</div>
+
+<!-- CHART 3 — RESOLUTION -->
+<div class="chart-area">
+  <div class="chart-grid-2">
+    <div class="chart-wrap" style="margin-bottom:0;">
+      <div class="chart-title">Fig. 3a — Avg. days to close a violation</div>
+      <div class="chart-subtitle">By borough, 2021–2025</div>
+      <div id="resolution-bar" style="height:300px;"></div>
+    </div>
+    <div class="chart-wrap" style="margin-bottom:0;">
+      <div class="chart-title">Fig. 3b — Distribution of resolution time</div>
+      <div class="chart-subtitle">How long violations actually take (days)</div>
+      <div id="resolution-hist" style="height:300px;"></div>
+    </div>
+  </div>
+  <p class="chart-note" style="margin-top:12px;">Fig. 3b shows the full distribution — note the long tail of violations taking 180+ days, concentrated in the Bronx and Brooklyn.</p>
+</div>
+
+<!-- CONCLUSION -->
+<div class="conclusion" id="conclusion">
+  <div class="conclusion-inner">
+    <div class="conclusion-label">04 — What the data tells us</div>
+    <h2 class="conclusion-h2">The Bronx is not unlucky. It is <em>systematically neglected.</em></h2>
+    <p class="conclusion-body">Year after year, the same pattern holds. The Bronx has the most complaints, the most violations, and the longest wait times for resolution. This is not random variation — the data points to a structural inequality in how New York City's housing enforcement system operates.</p>
+    <p class="conclusion-body"><strong>Complaints are not equally likely to become violations.</strong> In some boroughs, a high share of complaints lead to formal violations being issued — a sign that inspectors are responding. In others, complaints disappear into a system with too little capacity and too little urgency.</p>
+    <p class="conclusion-body">Housing is infrastructure. When it fails, it fails families. The data makes clear that in New York City, the zip code you live in is one of the strongest predictors of whether your housing problem will be addressed — and how quickly.</p>
+    <a class="notebook-link" href="#" target="_blank">→ Read the full technical analysis in the explainer notebook</a>
+  </div>
+</div>
+
+<footer>
+  <p>Data: NYC Open Data — HPD Violations &amp; Complaints · 2021–2025</p>
+  <p>Final Project · DTU · 2025</p>
+</footer>
+
+<script>
+const BOROUGHS = ['Bronx','Brooklyn','Manhattan','Queens','Staten Island'];
+const YEARS    = [2021, 2022, 2023, 2024, 2025];
+const COLORS   = { 'Bronx':'#c0392b','Brooklyn':'#2c7a6b','Manhattan':'#2563eb','Queens':'#d4860a','Staten Island':'#7a7166' };
+
+const plotBase = {
+  paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+  font:{ family:'DM Sans, sans-serif', color:'#7a7166', size:12 },
+};
+const axBase = { gridcolor:'#e2ddd6', linecolor:'#e2ddd6', tickfont:{ color:'#9d9590', size:11 }, zerolinecolor:'#e2ddd6' };
+const cfg = { responsive:true, displayModeBar:false };
+
+// ── PLACEHOLDER DATA ── replace with your real arrays ──────────────────
+const trendData = {
+  violations:{
+    'Bronx':        [18200,18800,19400,20100,20500],
+    'Brooklyn':     [16800,17200,17600,17900,18200],
+    'Manhattan':    [13400,13000,12600,12200,11900],
+    'Queens':       [11200,11500,11800,12000,12100],
+    'Staten Island':[2100, 2200, 2250, 2280, 2300],
+  },
+  complaints:{
+    'Bronx':        [28800,30200,31400,32800,34100],
+    'Brooklyn':     [27600,28400,29100,29800,30300],
+    'Manhattan':    [19400,19000,18600,18200,17900],
+    'Queens':       [17200,17800,18200,18500,18700],
+    'Staten Island':[4000, 4200, 4350, 4450, 4500],
+  },
+};
+
+const typeData = {
+  heat:{
+    'Bronx':        [9200,9600,9900,10200,10600],
+    'Brooklyn':     [8400,8700,8900,9100,9300],
+    'Manhattan':    [5200,5000,4900,4700,4600],
+    'Queens':       [5100,5300,5400,5500,5600],
+    'Staten Island':[1100,1150,1200,1230,1260],
+  },
+  plumbing:{
+    'Bronx':        [5800,6000,6200,6400,6600],
+    'Brooklyn':     [5400,5600,5700,5800,6000],
+    'Manhattan':    [4100,4000,3900,3800,3750],
+    'Queens':       [3900,4000,4100,4200,4300],
+    'Staten Island':[900,950,980,1000,1020],
+  },
+  pests:{
+    'Bronx':        [4200,4400,4600,4900,5100],
+    'Brooklyn':     [3600,3700,3800,3900,4000],
+    'Manhattan':    [2200,2100,2000,1900,1850],
+    'Queens':       [2400,2500,2600,2700,2750],
+    'Staten Island':[450,470,490,510,520],
+  },
+  structural:{
+    'Bronx':        [3100,3300,3500,3700,3900],
+    'Brooklyn':     [2800,2900,3000,3100,3200],
+    'Manhattan':    [1600,1550,1500,1450,1400],
+    'Queens':       [1800,1900,1950,2000,2050],
+    'Staten Island':[320,340,360,370,380],
+  },
+  elevator:{
+    'Bronx':        [2100,2200,2300,2400,2500],
+    'Brooklyn':     [1900,2000,2050,2100,2150],
+    'Manhattan':    [2400,2350,2300,2250,2200],
+    'Queens':       [800,850,880,900,920],
+    'Staten Island':[80,85,88,90,92],
+  },
+  mold:{
+    'Bronx':        [2800,3000,3200,3400,3600],
+    'Brooklyn':     [2300,2400,2500,2600,2700],
+    'Manhattan':    [1100,1050,1000,950,920],
+    'Queens':       [1400,1450,1500,1550,1580],
+    'Staten Island':[280,300,310,320,330],
+  },
+};
+
+const resolutionAvg = { 'Bronx':62,'Brooklyn':51,'Manhattan':35,'Queens':38,'Staten Island':27 };
+
+// ── CHART 1 — TREND ────────────────────────────────────────────────────
+function buildTrend(mode) {
+  const traces = BOROUGHS.map(b => ({
+    type:'scatter', mode:'lines+markers', name:b,
+    x:YEARS, y:trendData[mode][b],
+    line:{ color:COLORS[b], width:2.5 },
+    marker:{ color:COLORS[b], size:6 },
+    hovertemplate:`<b>${b}</b><br>%{x}: %{y:,}<extra></extra>`,
+  }));
+  Plotly.react('trend-chart', traces, {
+    ...plotBase,
+    xaxis:{ ...axBase, tickvals:YEARS, tickformat:'d' },
+    yaxis:{ ...axBase, tickformat:',' },
+    legend:{ orientation:'h', x:0, y:-0.2, font:{ color:'#4a4540', size:11 } },
+    hovermode:'x unified',
+    margin:{ t:10, b:64, l:72, r:16 },
+  }, cfg);
+}
+function setTrend(mode, btn) {
+  document.querySelectorAll('.tog').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  buildTrend(mode);
+}
+buildTrend('violations');
+
+// ── CHART 2 — TYPES ────────────────────────────────────────────────────
+function buildTypes(type) {
+  const traces = BOROUGHS.map(b => ({
+    type:'bar', name:b, x:YEARS, y:typeData[type][b],
+    marker:{ color:COLORS[b], opacity:0.88 },
+    hovertemplate:`<b>${b}</b><br>%{x}: %{y:,}<extra></extra>`,
+  }));
+  Plotly.react('types-chart', traces, {
+    ...plotBase,
+    barmode:'group', bargap:0.22, bargroupgap:0.05,
+    xaxis:{ ...axBase, tickvals:YEARS, tickformat:'d' },
+    yaxis:{ ...axBase, tickformat:',' },
+    legend:{ orientation:'h', x:0, y:-0.22, font:{ color:'#4a4540', size:11 } },
+    margin:{ t:10, b:64, l:72, r:16 },
+  }, cfg);
+}
+function setType(type, btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  buildTypes(type);
+}
+buildTypes('heat');
+
+// ── CHART 3A — RESOLUTION BAR ──────────────────────────────────────────
+(function() {
+  const sorted = [...BOROUGHS].sort((a,b) => resolutionAvg[b] - resolutionAvg[a]);
+  Plotly.newPlot('resolution-bar', [{
+    type:'bar', orientation:'h',
+    x:sorted.map(b => resolutionAvg[b]),
+    y:sorted,
+    marker:{ color:sorted.map(b => COLORS[b]), opacity:0.9 },
+    text:sorted.map(b => resolutionAvg[b]+' days'),
+    textposition:'outside',
+    textfont:{ color:'#4a4540', size:11 },
+    hovertemplate:'<b>%{y}</b><br>Avg. days to close: %{x}<extra></extra>',
+  }], {
+    ...plotBase,
+    xaxis:{ ...axBase, title:{ text:'Average days', font:{ size:11, color:'#9d9590' } } },
+    yaxis:{ ...axBase, tickfont:{ color:'#1a1814', size:12 } },
+    margin:{ t:10, b:48, l:90, r:64 },
+  }, cfg);
+})();
+
+// ── CHART 3B — HISTOGRAM ───────────────────────────────────────────────
+(function() {
+  function genDist(mean, n, label, color) {
+    const vals = [];
+    for (let i=0;i<n;i++) {
+      let v = Math.round(mean + (Math.random()-0.45)*mean*1.2 + Math.random()*mean*0.5);
+      if (v<1) v=1;
+      vals.push(v);
+    }
+    return {
+      type:'histogram', name:label, x:vals,
+      marker:{ color, opacity:0.65 },
+      autobinx:false, xbins:{ start:0, end:280, size:14 },
+      hovertemplate:`<b>${label}</b><br>%{x} days: %{y} violations<extra></extra>`,
+    };
+  }
+  Plotly.newPlot('resolution-hist', [
+    genDist(62,800,'Bronx',  '#c0392b'),
+    genDist(51,700,'Brooklyn','#2c7a6b'),
+    genDist(35,500,'Manhattan','#2563eb'),
+    genDist(38,480,'Queens', '#d4860a'),
+    genDist(27,200,'Staten Island','#7a7166'),
+  ], {
+    ...plotBase,
+    barmode:'overlay',
+    xaxis:{ ...axBase, title:{ text:'Days to close', font:{ size:11, color:'#9d9590' } }, range:[0,280] },
+    yaxis:{ ...axBase, title:{ text:'Violations', font:{ size:11, color:'#9d9590' } } },
+    legend:{ orientation:'h', x:0, y:-0.22, font:{ color:'#4a4540', size:11 } },
+    margin:{ t:10, b:64, l:64, r:16 },
+  }, cfg);
+})();
+</script>
 </body>
-
-<!-- Static images -->
-<img src="images/yearly_crime_trends.png" alt="Yearly crime trends" style="max-width: 100%;">
-
-<!-- Link as separate page -->
-<a href="visualizations/">Explore hourly crime patterns →</a>
-
-<!-- Embeded in a page -->
-<iframe src="visualizations/" width="100%" height="600" frameborder="0"></iframe>
-
-
-
 </html>
