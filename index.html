@@ -310,7 +310,7 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 
 <!-- ════════════════════════════════════════════════════════════════ NAV -->
 <nav>
-  <div class="nav-title">Left Behind — NYC Housing</div>
+  <div class="nav-title">The City of <em>Dreams</em>?</h1>
   <div class="nav-links">
     <a href="#intro">Introduction</a>
     <a href="#complaints">Complaints</a>
@@ -325,24 +325,22 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 <!-- ═══════════════════════════════════════════════════════════════ HERO -->
 <div class="hero" id="intro">
   <div class="hero-kicker">NYC Open Data · HPD · 2021 – 2025</div>
-  <h1 class="hero-headline">The City of <em>Dreams</em></h1>
+  <h1 class="hero-headline">The City of <em>Dreams</em>?</h1>
   <p class="hero-deck">Every year, more than 300,000 people move to New York City in pursuit of a better life. Many drawn by opportunity, others by the promise that ambition alone is enough. The skyline sells the dream. The housing data tells a different story.</p>
   <div class="hero-byline">Data analysis by <span>[ Maria Vendas &amp; Diogo Forte ]</span> · Final project · <span>DTU</span></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ BRIDGE -->
+<!-- ════════════════════════════════════════════════ METRICS STRIP #1 -->
+<div class="metrics-strip">
 <div class="story-section">
-  <h2 class="story-h2">A System at the <em>Breaking Point</em></h2>
+  <h2 class="story-h2">A System at the <em>Breaking Point</em></h2> # a preto
   <p class="story-body">As New York's housing stock continues to age, the systems designed to protect its residents are fracturing.
     Buildings go years without basic repairs. Heating fails. Mold spreads. Structural damage is ignored.</p>
   <p class="story-body">The city's Housing Preservation and Development agency (HPD) tracks this crisis
     through two lenses: <strong>complaints</strong> filed directly whenever a tenant calls 311 to report an issue,
     and formal <strong>violations</strong> issued after an inspector visits. Together, these datasets reveal who
     is <strong>left behind</strong>, and <strong>who is responsible</strong>.</p>
-</div>
 
-<!-- ════════════════════════════════════════════════ METRICS STRIP #1 -->
-<div class="metrics-strip">
   <div class="metric-block">
     <div class="metric-lbl">Complaints filed</div>
     <div class="metric-num">2,468,069</div>
@@ -377,8 +375,6 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 
 <!-- ═══════════════════════════════════════ PART I — COMPLAINTS -->
 <div class="part-divider" id="complaints">
-  <div class="part-divider-label">Part I</div>
-  <div class="part-divider-title">The Complaint Crisis</div>
 </div>
 
 <!-- CHAPTER 01 -->
@@ -397,7 +393,6 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 <div class="chart-area">
   <div class="chart-wrap">
     <div class="chart-title">Fig. 1 — The Geography of Housing Distress</div>
-    <div class="chart-subtitle">Concentration of HPD complaints by Zip Code (2021–2025)</div>
     <iframe
       src="visualizations/complaints/zip_complaints_map_test.html"
       title="Map of NYC Housing Complaints by Zip Code"
@@ -431,8 +426,6 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 
 <!-- CHAPTER 02 -->
 <div class="story-section">
-  <div class="chapter-label"><span class="chapter-num">02</span> Digging Deeper</div>
-  <h2 class="story-h2">The Anatomy of the Complaints: <em>Category by Category</em></h2>
   <p class="story-body">To better understand the behaviour of each complaint category throughout the multiple years and neighbourhoods, we conducted a borough-level breakdown.</p>
   <p class="story-body">For plumbing, unsanitary conditions, and heat/hot water, the Bronx rates higher than all other boroughs in every year. For electric and water leak complaints, it disputes first place with Brooklyn between 2022 and 2023, before taking the lead outright in 2024 and 2025.</p>
 </div>
@@ -467,50 +460,6 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
   </div>
 </div>
 
-<!-- CHAPTER 03 -->
-<div class="story-section">
-  <div class="chapter-label"><span class="chapter-num">03</span> Income &amp; Distress</div>
-  <h2 class="story-h2">Is the <em>Income Gap</em> a <em>Housing Gap</em>?</h2>
-  <p class="story-body">The data reveals an uncomfortable truth. In New York City, your zip code and
-    your bank account determine whether you live in a safe, functional home. When we overlay median household
-    income against HPD complaint density, the correlation is almost 100%. Areas of concentrated wealth experience
-    almost total housing stability, while the city's lowest-income neighborhoods bear the overwhelming brunt of
-    the housing crisis. Therefore, Bronx and Brooklyn stand out as the boroughs most affected by this disparity.
-    Their low income levels contribute to the persistent housing issues in these areas.
-  </p>
-</div>
-
-<!-- FIG. 3 — Side-by-side map comparison -->
-<div class="chart-area wide">
-  <div class="chart-wrap">
-    <div class="chart-title">Fig. 3 — Complaints vs. Income</div>
-    <div class="chart-subtitle">Housing distress concentration mapped against median household income by Zip Code</div>
-    <div class="map-compare-grid">
-      <div>
-        <div class="map-compare-label">HPD Complaints density</div>
-        <div class="map-compare-frame">
-          <iframe
-            src="visualizations/complaints/zip_complaints_map.html"
-            title="Map of NYC Housing Complaints by Zip Code"
-            loading="lazy">
-          </iframe>
-        </div>
-      </div>
-      <div>
-        <div class="map-compare-label">Median household income</div>
-        <div class="map-compare-frame">
-          <iframe
-            src="visualizations/nyc_income_map.html"
-            title="Map of NYC Median Household Income by Zip Code"
-            loading="lazy">
-          </iframe>
-        </div>
-      </div>
-    </div>
-    <p class="chart-note">Sources: NYC Open Data — HPD Service Requests; U.S. Census Bureau ACS 5-Year Estimates. Darker complaint areas consistently overlap with lower-income zip codes.</p>
-  </div>
-</div>
-
 <!-- ════════════════════════════════════════ PART II — VIOLATIONS -->
 <div class="viol-metrics-strip">
   <div class="viol-metric-block">
@@ -535,8 +484,6 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 </div>
 
 <div class="part-divider" id="violations">
-  <div class="part-divider-label">Part II</div>
-  <div class="part-divider-title">From Complaint to Violation</div>
 </div>
 
 <!-- CHAPTER 04 -->
@@ -620,6 +567,51 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
     </div>
   </div>
 </div>
+
+<!-- CHAPTER 03 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">03</span> Income &amp; Distress</div>
+  <h2 class="story-h2">Is the <em>Income Gap</em> a <em>Housing Gap</em>?</h2>
+  <p class="story-body">The data reveals an uncomfortable truth. In New York City, your zip code and
+    your bank account determine whether you live in a safe, functional home. When we overlay median household
+    income against HPD complaint density, the correlation is almost 100%. Areas of concentrated wealth experience
+    almost total housing stability, while the city's lowest-income neighborhoods bear the overwhelming brunt of
+    the housing crisis. Therefore, Bronx and Brooklyn stand out as the boroughs most affected by this disparity.
+    Their low income levels contribute to the persistent housing issues in these areas.
+  </p>
+</div>
+
+<!-- FIG. 3 — Side-by-side map comparison -->
+<div class="chart-area wide">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 3 — Complaints vs. Income</div>
+    <div class="chart-subtitle">Housing distress concentration mapped against median household income by Zip Code</div>
+    <div class="map-compare-grid">
+      <div>
+        <div class="map-compare-label">HPD Complaints density</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/complaints/zip_complaints_map.html"
+            title="Map of NYC Housing Complaints by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+      <div>
+        <div class="map-compare-label">Median household income</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/nyc_income_map.html"
+            title="Map of NYC Median Household Income by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">Sources: NYC Open Data — HPD Service Requests; U.S. Census Bureau ACS 5-Year Estimates. Darker complaint areas consistently overlap with lower-income zip codes.</p>
+  </div>
+</div>
+
 
 <!-- CHAPTER 05b -->
 <div class="story-section">
