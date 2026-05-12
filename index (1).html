@@ -687,52 +687,6 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 
 <!-- CHAPTER 06 -->
 <div class="story-section">
-  <div class="chapter-label"><span class="chapter-num">06</span> The Waiting Game</div>
-  <h2 class="story-h2">Getting a violation on record is one thing. <em>Getting it fixed</em> is another.</h2>
-  <p class="story-body">Once a violation is issued, the clock starts ticking — but in many parts of the city,
-    it never seems to stop. The map below shows the average number of days a violation remains open before any resolution. Across the board, lower-income zip codes see violations linger significantly longer than wealthier areas, even for the most dangerous Class C cases that pose an immediate risk to residents.</p>
-  <p class="story-body">This gap reveals a second layer of inequity: it is not only that poor neighbourhoods receive more violations, but that those violations are left to
-    fester for longer. The burden of an unresolved hazard falls entirely on the tenant while the system stalls.</p>
-</div>
-
-<!-- FIG. 6 — Days open maps tabbed -->
-<div class="chart-area wide">
-  <div class="chart-wrap">
-    <div class="chart-title">Fig. 6 — How Long Do Violations Stay Open?</div>
-    <div class="chart-subtitle">Average days a violation remains unresolved, by zip code (2021–2025)</div>
-    <div class="tab-container">
-      <button class="map-tab active" onclick="switchFrame(this, 'open-map', 'visualizations/zip_open_all.html')">All Classes</button>
-      <button class="map-tab" onclick="switchFrame(this, 'open-map', 'visualizations/zip_open_c.html')">Class C (immediately hazardous)</button>
-    </div>
-    <div class="map-compare-grid">
-      <div>
-        <div class="map-compare-label">Avg. days violation stays open</div>
-        <div class="map-compare-frame">
-          <iframe
-            id="open-map"
-            src="visualizations/zip_open_all.html"
-            title="Average days open by zip code"
-            loading="lazy">
-          </iframe>
-        </div>
-      </div>
-      <div>
-        <div class="map-compare-label">Median household income</div>
-        <div class="map-compare-frame">
-          <iframe
-            src="visualizations/nyc_income_map.html"
-            title="Map of NYC Median Household Income by Zip Code"
-            loading="lazy">
-          </iframe>
-        </div>
-      </div>
-    </div>
-    <p class="chart-note">Source: NYC Open Data — HPD Violations. Days open calculated from inspection date to certification date, or to present for unresolved violations. Darker shading indicates longer average resolution times.</p>
-  </div>
-</div>
-
-<!-- CHAPTER 07 -->
-<div class="story-section">
   <div class="chapter-label"><span class="chapter-num">07</span> Closing the Loop</div>
   <h2 class="story-h2">Both complaints and violations are deeply related to socioeconomic factors. But
     does the time it takes to resolve a violation also track with income?
@@ -743,7 +697,7 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
     reflect landlord delays, slower HPD re-inspection schedules, or both — but the outcome is the same: tenants in the poorest neighbourhoods wait the longest for their homes to be officially declared safe, even after a fix has supposedly been made.</p>
 </div>
 
-<!-- FIG. 7 — Days to certify maps tabbed -->
+<!-- FIG. 6 — Days to certify maps tabbed -->
 <div class="chart-area wide">
   <div class="chart-wrap">
     <div class="chart-title">Fig. 7 — How Long Does It Take to Close a Violation?</div>
@@ -779,6 +733,54 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
   </div>
 </div>
 
+
+<!-- CHAPTER 07 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">06</span> The Waiting Game</div>
+  <h2 class="story-h2">Getting a violation on record is one thing. <em>Getting it fixed</em> is another.</h2>
+  <p class="story-body">Once a violation is issued, the clock starts ticking — but in many parts of the city,
+    it never seems to stop. The map below shows the average number of days a violation remains open before any resolution. Across the board, lower-income zip codes see violations linger significantly longer than wealthier areas, even for the most dangerous Class C cases that pose an immediate risk to residents.</p>
+  <p class="story-body">This gap reveals a second layer of inequity: it is not only that poor neighbourhoods receive more violations, but that those violations are left to
+    fester for longer. The burden of an unresolved hazard falls entirely on the tenant while the system stalls.</p>
+</div>
+
+<!-- FIG. 7 — Days open maps tabbed -->
+<div class="chart-area wide">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 6 — How Long Do Violations Stay Open?</div>
+    <div class="chart-subtitle">Average days a violation remains unresolved, by zip code (2021–2025)</div>
+    <div class="tab-container">
+      <button class="map-tab active" onclick="switchFrame(this, 'open-map', 'visualizations/zip_open_all.html')">All Classes</button>
+      <button class="map-tab" onclick="switchFrame(this, 'open-map', 'visualizations/zip_open_c.html')">Class C (immediately hazardous)</button>
+    </div>
+    <div class="map-compare-grid">
+      <div>
+        <div class="map-compare-label">Avg. days violation stays open</div>
+        <div class="map-compare-frame">
+          <iframe
+            id="open-map"
+            src="visualizations/zip_open_all.html"
+            title="Average days open by zip code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+      <div>
+        <div class="map-compare-label">Median household income</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/nyc_income_map.html"
+            title="Map of NYC Median Household Income by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">Source: NYC Open Data — HPD Violations. Days open calculated from inspection date to certification date, or to present for unresolved violations. Darker shading indicates longer average resolution times.</p>
+  </div>
+</div>
+
+
 <!-- ════════════════════════════════════════ PART IV — LANDLORDS -->
 <div class="viol-metrics-strip">
   <div class="viol-metric-block">
@@ -794,9 +796,9 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
   <div class="viol-metric-block">
     <div class="viol-metric-lbl">Owner types</div>
     <ul class="viol-meta-list">
-      <li><strong>Corporate Owners</strong> — LLCs and property companies</li>
-      <li><strong>Shareholders</strong> — Co-op and condo structures</li>
-      <li><strong>Individual Owners</strong> — Named private landlords</li>
+      <li><strong>Corporate Owners</strong></li>
+      <li><strong>Shareholders</strong> </li>
+      <li><strong>Individual Owners</strong></li>
     </ul>
   </div>
 </div>
@@ -810,11 +812,7 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
 <div class="story-section">
   <div class="chapter-label"><span class="chapter-num">08</span> Who Is Responsible?</div>
   <h2 class="story-h2">Behind every violation is a building. Behind every building is <em>an owner.</em></h2>
-  <p class="story-body">Violations do not occur randomly — they cluster. A small number of landlords are responsible for a disproportionate share of the city's housing hazards.
-     Just 75 owners account for roughly 20% of all violations recorded between 2021 and 2025, controlling 872 registered buildings across the five boroughs.</p>
-  <p class="story-body">These repeat offenders span all three ownership types: anonymous LLCs that obscure accountability, shareholders in co-op structures, and
-    named individual landlords. The pattern is consistent — concentrated ownership, concentrated neglect, and concentrated harm falling on the same low-income communities
-    that already bear the heaviest complaint and violation burdens.</p>
+  <p class="story-body">
 </div>
 
 <!-- FIG. 8 — Owners table -->
@@ -841,8 +839,7 @@ footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospa
   <div class="conclusion-inner">
     <div class="conclusion-label">Findings</div>
     <h2 class="conclusion-h2">A city of <em>unequal</em> shelter</h2>
-    <p class="conclusion-body">The data tells a story the skyline does not. Housing distress in New York City is not random — it maps almost perfectly onto existing lines of race, income, and borough. The Bronx carries a disproportionate burden of complaints; Queens and Staten Island struggle to close the violations they have. Across the city, nearly one in three formal violations issued since 2021 remains open today.</p>
-    <p class="conclusion-body">The HPD system is not broken — inspectors come, violations are issued, many are closed. But for hundreds of thousands of families, the machinery of protection moves too slowly, and the consequences of waiting are measured in cold winters, spreading mold, and structural decay.</p>
+    <p class="conclusion-body">
     <a class="notebook-link" href="#" target="_blank">→ View the full analysis notebook</a>
   </div>
 </div>
