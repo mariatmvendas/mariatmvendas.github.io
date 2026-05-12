@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Left Behind — NYC Housing Conditions</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #f7f4ef;
+  --surface: #ffffff;
+  --border: #e2ddd6;
+  --text: #1a1814;
+  --muted: #7a7166;
+  --accent: #c0392b;
+  --accent2: #2c7a6b;
+  --accent3: #d4860a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* ── NAV ─────────────────────────────────────────────────────────────────── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,244,239,0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+}
+.nav-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 700; color: var(--text);
+}
+.nav-links { display: flex; gap: 24px; }
+.nav-links a {
+  font-size: 12px; color: var(--muted); text-decoration: none;
+  letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-source {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  background: #ede9e3; border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: 2px; text-decoration: none;
+}
+.nav-source:hover { color: var(--text); }
+
+/* ── HERO ────────────────────────────────────────────────────────────────── */
+.hero {
+  max-width: 820px; margin: 0 auto;
+  padding: 80px 2rem 64px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-kicker {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent);
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px;
+}
+.hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 6vw, 68px); font-weight: 700; line-height: 1.05;
+  color: var(--text); margin-bottom: 24px;
+}
+.hero-headline em { font-style: italic; color: var(--accent); }
+.hero-deck {
+  font-size: 18px; color: var(--muted);
+  max-width: 600px; line-height: 1.7; margin-bottom: 40px; font-weight: 300;
+}
+.hero-byline {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.06em;
+}
+.hero-byline span { color: var(--text); font-weight: 500; }
+
+/* ── METRICS STRIPS ──────────────────────────────────────────────────────── */
+.metrics-strip {
+  background: var(--text);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.viol-metrics-strip {
+  background: var(--text);
+  display: grid; grid-template-columns: repeat(3, 1fr);
+}
+.metric-block,
+.viol-metric-block {
+  padding: 28px; border-right: 1px solid #2a2a2a;
+}
+.metric-block:last-child,
+.viol-metric-block:last-child { border-right: none; }
+.metric-lbl,
+.viol-metric-lbl {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7166;
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+}
+.metric-num,
+.viol-metric-num {
+  font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700;
+  color: #f7f4ef; line-height: 1.1; margin-bottom: 4px;
+}
+.metric-num.red { color: var(--accent); }
+.metric-ctx { font-size: 12px; color: #6a6460; margin-top: 4px; }
+
+/* ── TAGS ────────────────────────────────────────────────────────────────── */
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.5rem; }
+.tag {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  padding: 3px 8px; border: 1px solid #3a3530;
+  border-radius: 3px; color: #c8c0b4; letter-spacing: 0.04em;
+}
+.tag.red {
+  border-color: #c0392b; color: #f08070;
+  background: rgba(192,57,43,0.15);
+}
+
+/* ── VIOLATIONS META LIST ────────────────────────────────────────────────── */
+.viol-meta-list { list-style: none; padding: 0; margin-top: 4px; }
+.viol-meta-list li { font-size: 13px; color: #c8c0b4; margin-bottom: 4px; }
+.viol-meta-list li strong { color: #f7f4ef; }
+.status-pill {
+  display: inline-block; font-size: 11px;
+  padding: 2px 10px; border-radius: 99px; font-family: 'DM Mono', monospace;
+  margin-right: 4px;
+}
+.status-pill.open   { background: rgba(192,57,43,0.2); color: #f08070; }
+.status-pill.closed { background: rgba(44,122,107,0.2); color: #6ecebf; }
+
+/* ── PART DIVIDERS ───────────────────────────────────────────────────────── */
+.part-divider {
+  background: var(--text); padding: 40px 2rem;
+  text-align: center; border-top: 1px solid #2a2a2a;
+}
+.part-divider-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7166;
+  letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 10px;
+}
+.part-divider-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3vw, 30px); font-weight: 700; color: #f7f4ef;
+}
+
+/* ── PROSE SECTIONS ──────────────────────────────────────────────────────── */
+.story-section {
+  max-width: 820px; margin: 0 auto;
+  padding: 72px 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.chapter-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.chapter-label::after {
+  content: ''; flex: 1; max-width: 40px; height: 1px; background: var(--border);
+}
+.chapter-num { color: var(--accent); }
+.story-h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.15;
+  color: var(--text); margin-bottom: 20px;
+}
+.story-h2 em { font-style: italic; color: var(--accent); }
+.story-body {
+  font-size: 16px; color: #4a4540; line-height: 1.8;
+  margin-bottom: 16px; max-width: 640px;
+}
+.story-body:last-child { margin-bottom: 0; }
+.story-body strong { color: var(--text); font-weight: 500; }
+.pull-quote {
+  border-left: 3px solid var(--accent);
+  margin: 32px 0; padding: 8px 0 8px 24px;
+}
+.pull-quote p {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-style: italic; color: var(--text); line-height: 1.5;
+}
+
+/* ── CHART AREA ──────────────────────────────────────────────────────────── */
+.chart-area {
+  max-width: 960px; margin: 0 auto; padding: 0 2rem 64px;
+}
+.chart-area.wide { max-width: 1200px; }
+.chart-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 24px; margin-bottom: 16px;
+}
+.chart-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px;
+}
+.chart-subtitle {
+  font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 20px;
+}
+.chart-note { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 16px; }
+
+/* ── TABS ────────────────────────────────────────────────────────────────── */
+.tab-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.map-tab {
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s ease;
+  color: var(--muted);
+  font-weight: 500;
+}
+.map-tab:hover { border-color: var(--text); color: var(--text); }
+.map-tab.active {
+  background: #a50f15; color: #fff;
+  border-color: #a50f15; font-weight: 700;
+  box-shadow: 0 2px 5px rgba(165,15,21,0.3);
+}
+
+/* ── MAP / IMAGE VIEWPORTS ───────────────────────────────────────────────── */
+.map-viewport-wrapper {
+  background: #fff; border-radius: 4px;
+  border: 1px solid var(--border); overflow: hidden;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 400px;
+}
+.map-viewport-wrapper img { display: block; width: 100%; height: auto; transition: opacity 0.3s ease-in-out; }
+.map-viewport-wrapper iframe { display: block; width: 100%; border: none; height: 500px; }
+
+/* ── SIDE-BY-SIDE MAPS ───────────────────────────────────────────────────── */
+.map-compare-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px;
+}
+.map-compare-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+}
+.map-compare-frame {
+  overflow: hidden; border: 1px solid var(--border);
+  border-radius: 4px; height: 480px; position: relative;
+}
+.map-compare-frame iframe {
+  border: none; display: block;
+  width: 150%; height: 150%;
+  transform: scale(0.67); transform-origin: top left;
+}
+
+/* ── CALLOUT CARDS ───────────────────────────────────────────────────────── */
+.callout-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; }
+.callout-row.two-col { grid-template-columns: repeat(2, 1fr); }
+.callout {
+  padding: 16px 18px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 3px solid var(--border); border-radius: 0 0 4px 4px;
+}
+.callout.red   { border-top-color: var(--accent); }
+.callout.green { border-top-color: var(--accent2); }
+.callout.amber { border-top-color: var(--accent3); }
+.callout-val {
+  font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;
+  color: var(--text); margin-bottom: 4px;
+}
+.callout-val.red { color: var(--accent); }
+.callout-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ── CONCLUSION ──────────────────────────────────────────────────────────── */
+.conclusion { background: var(--text); color: var(--bg); padding: 80px 2rem; }
+.conclusion-inner { max-width: 720px; margin: 0 auto; }
+.conclusion-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: #7a7166;
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px;
+}
+.conclusion-h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 42px); font-weight: 700; line-height: 1.15;
+  color: #f7f4ef; margin-bottom: 24px;
+}
+.conclusion-h2 em { font-style: italic; color: var(--accent); }
+.conclusion-body { font-size: 16px; color: #c8c0b4; line-height: 1.8; margin-bottom: 16px; }
+.conclusion-body strong { color: #f7f4ef; }
+.notebook-link {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; padding: 12px 24px;
+  border: 1px solid #444; color: #f7f4ef; text-decoration: none; font-size: 13px;
+  font-family: 'DM Mono', monospace; letter-spacing: 0.06em; transition: all 0.2s;
+}
+.notebook-link:hover { background: rgba(255,255,255,0.06); border-color: #888; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+footer {
+  padding: 24px 2rem; display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+footer p { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .metrics-strip { grid-template-columns: repeat(2, 1fr); }
+  .viol-metrics-strip { grid-template-columns: 1fr; }
+  .callout-row,
+  .callout-row.two-col { grid-template-columns: 1fr; }
+  .map-compare-grid { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════ NAV -->
+<nav>
+  <div class="nav-title">Left Behind — NYC Housing</div>
+  <div class="nav-links">
+    <a href="#intro">Introduction</a>
+    <a href="#complaints">Complaints</a>
+    <a href="#violations">Violations</a>
+    <a href="#days">Days to Close</a>
+    <a href="#landlords">Landlords</a>
+    <a href="#conclusion">Findings</a>
+  </div>
+  <a class="nav-source" href="#" target="_blank">→ Explainer notebook</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════ HERO -->
+<div class="hero" id="intro">
+  <div class="hero-kicker">NYC Open Data · HPD · 2021 – 2025</div>
+  <h1 class="hero-headline">The City of <em>Dreams</em></h1>
+  <p class="hero-deck">Every year, more than 300,000 people move to New York City in pursuit of a better life. Many drawn by opportunity, others by the promise that ambition alone is enough. The skyline sells the dream. The housing data tells a different story.</p>
+  <div class="hero-byline">Data analysis by <span>[ Maria Vendas &amp; Diogo Forte ]</span> · Final project · <span>DTU</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ BRIDGE -->
+<div class="story-section">
+  <h2 class="story-h2">A System at the <em>Breaking Point</em></h2>
+  <p class="story-body">As New York's housing stock continues to age, the systems designed to protect its residents are fracturing.
+    Buildings go years without basic repairs. Heating fails. Mold spreads. Structural damage is ignored.</p>
+  <p class="story-body">The city's Housing Preservation and Development agency (HPD) tracks this crisis
+    through two lenses: <strong>complaints</strong> filed directly whenever a tenant calls 311 to report an issue,
+    and formal <strong>violations</strong> issued after an inspector visits. Together, these datasets reveal who
+    is <strong>left behind</strong>, and <strong>who is responsible</strong>.</p>
+</div>
+
+<!-- ════════════════════════════════════════════════ METRICS STRIP #1 -->
+<div class="metrics-strip">
+  <div class="metric-block">
+    <div class="metric-lbl">Complaints filed</div>
+    <div class="metric-num">2,468,069</div>
+  </div>
+  <div class="metric-block">
+    <div class="metric-lbl">Investigation Period</div>
+    <div class="metric-num" style="font-size:1.1rem">Jan 1 2021 – Dec 31 2025</div>
+  </div>
+  <div class="metric-block">
+    <div class="metric-lbl">Coverage</div>
+    <div class="metric-num" style="font-size:1.15rem">5 boroughs and 211 zip codes</div>
+    <div class="tag-list">
+      <span class="tag">Bronx</span>
+      <span class="tag">Queens</span>
+      <span class="tag">Staten Is.</span>
+      <span class="tag">Brooklyn</span>
+      <span class="tag">Manhattan</span>
+    </div>
+  </div>
+  <div class="metric-block">
+    <div class="metric-lbl">Complaint types</div>
+    <div class="metric-num" style="font-size:1.15rem">5 categories</div>
+    <div class="tag-list">
+      <span class="tag red">Heat / Hot water</span>
+      <span class="tag red">Plumbing</span>
+      <span class="tag red">Water leak</span>
+      <span class="tag red">Unsanitary</span>
+      <span class="tag red">Electric</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PART I — COMPLAINTS -->
+<div class="part-divider" id="complaints">
+  <div class="part-divider-label">Part I</div>
+  <div class="part-divider-title">The Complaint Crisis</div>
+</div>
+
+<!-- CHAPTER 01 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">01</span> The Scale</div>
+  <h2 class="story-h2"> Volume of Voice:<em> 3 Million Pleas for Repair</em></h2>
+  <p class="story-body">Between January 1 of 2021, and December 31 of 2025, HPD received over 3 million
+    complaints. Focusing on the "Big Five" issues: <strong>Heat/Hot Water, Unsanitary Conditions, Water Leaks,
+      Plumbing, and Electric</strong>, yields a total of <strong>2,468,069</strong> recorded cases.</p>
+  <p class="story-body">While the volume of complaints has risen city-wide, the map below reveals a stark
+    geographic reality: housing distress is deeply concentrated. By looking at the city by zip code, we can
+    see exactly where the system is under the most pressure.</p>
+</div>
+
+<!-- FIG. 1 — Complaints map -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 1 — The Geography of Housing Distress</div>
+    <div class="chart-subtitle">Concentration of HPD complaints by Zip Code (2021–2025)</div>
+    <iframe
+      src="visualizations/complaints/zip_complaints_map_test.html"
+      title="Map of NYC Housing Complaints by Zip Code"
+      width="100%"
+      height="580px"
+      style="border:none; margin-top: 5px;"
+      loading="lazy">
+    </iframe>
+    <p class="chart-note">Source: NYC Open Data — HPD Service Requests. "Big Five" issues include Heat, Hot Water, Unsanitary Conditions, Plumbing, and Electric.</p>
+  </div>
+
+  <div class="callout-row">
+    <div class="callout red">
+      <div class="callout-val red">The Bronx</div>
+      <div class="callout-desc">With <strong>595 complaints per 1,000 residents</strong>,
+        the Bronx significantly outpaces the rest of the city (reporting 82% more issues than Manhattan
+        and 124% more than Brooklyn).</div>
+    </div>
+    <div class="callout green">
+      <div class="callout-val">Top Hotspots</div>
+      <div class="callout-desc">Four of the top five zip codes are in the Bronx (10452, 10457, 10458, 10467),
+        with <strong>11226 in Flatbush, Brooklyn</strong>.</div>
+    </div>
+    <div class="callout amber">
+      <div class="callout-val">2.4M</div>
+      <div class="callout-desc">Total complaints across these five categories city-wide, representing a massive
+      strain on HPD's inspection resources over the last four years.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 02 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">02</span> Digging Deeper</div>
+  <h2 class="story-h2">The Anatomy of the Complaints: <em>Category by Category</em></h2>
+  <p class="story-body">To better understand the behaviour of each complaint category throughout the multiple years and neighbourhoods, we conducted a borough-level breakdown.</p>
+  <p class="story-body">For plumbing, unsanitary conditions, and heat/hot water, the Bronx rates higher than all other boroughs in every year. For electric and water leak complaints, it disputes first place with Brooklyn between 2022 and 2023, before taking the lead outright in 2024 and 2025.</p>
+</div>
+
+<!-- FIG. 2 — Category images -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 2 — Complaints by Category and Borough</div>
+    <div class="chart-subtitle">Select a category to see borough-level trends (2021–2025)</div>
+    <div class="tab-container">
+      <button class="map-tab active" onclick="switchImage(this, 'cat-img', 'images/heat.png')">Heat &amp; Hot Water</button>
+      <button class="map-tab" onclick="switchImage(this, 'cat-img', 'images/unsanitary.png')">Unsanitary</button>
+      <button class="map-tab" onclick="switchImage(this, 'cat-img', 'images/water.png')">Water Leak</button>
+      <button class="map-tab" onclick="switchImage(this, 'cat-img', 'images/pumbling.png')">Plumbing</button>
+      <button class="map-tab" onclick="switchImage(this, 'cat-img', 'images/eletric.png')">Electric</button>
+    </div>
+    <div class="map-viewport-wrapper">
+      <img id="cat-img" src="images/heat.png" alt="Complaint category chart by borough">
+    </div>
+    <p class="chart-note">Source: NYC Open Data. Toggle tabs to see trends for specific housing issues.</p>
+  </div>
+
+  <div class="callout-row two-col">
+    <div class="callout red">
+      <div class="callout-val red">Heat &amp; Hot Water</div>
+      <div class="callout-desc">The most reported category by far — around <strong>1,276,000 complaints</strong>, representing 52% of all filings across the five-year period.</div>
+    </div>
+    <div class="callout green">
+      <div class="callout-val">Bronx &amp; Brooklyn</div>
+      <div class="callout-desc">Across all 5 categories, these two boroughs consistently report the highest complaint volumes, year after year.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 03 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">03</span> Income &amp; Distress</div>
+  <h2 class="story-h2">Is the <em>Income Gap</em> a <em>Housing Gap</em>?</h2>
+  <p class="story-body">The data reveals an uncomfortable truth. In New York City, your zip code and
+    your bank account determine whether you live in a safe, functional home. When we overlay median household
+    income against HPD complaint density, the correlation is almost 100%. Areas of concentrated wealth experience
+    almost total housing stability, while the city's lowest-income neighborhoods bear the overwhelming brunt of
+    the housing crisis. Therefore, Bronx and Brooklyn stand out as the boroughs most affected by this disparity.
+    Their low income levels contribute to the persistent housing issues in these areas.
+  </p>
+</div>
+
+<!-- FIG. 3 — Side-by-side map comparison -->
+<div class="chart-area wide">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 3 — Complaints vs. Income</div>
+    <div class="chart-subtitle">Housing distress concentration mapped against median household income by Zip Code</div>
+    <div class="map-compare-grid">
+      <div>
+        <div class="map-compare-label">HPD Complaints density</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/complaints/zip_complaints_map.html"
+            title="Map of NYC Housing Complaints by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+      <div>
+        <div class="map-compare-label">Median household income</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/nyc_income_map.html"
+            title="Map of NYC Median Household Income by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">Sources: NYC Open Data — HPD Service Requests; U.S. Census Bureau ACS 5-Year Estimates. Darker complaint areas consistently overlap with lower-income zip codes.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ PART II — VIOLATIONS -->
+<div class="viol-metrics-strip">
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Formal violations issued</div>
+    <div class="viol-metric-num">3,993,459</div>
+  </div>
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Violations' classes</div>
+    <ul class="viol-meta-list">
+      <li><strong>Class A</strong> — Non-hazardous</li>
+      <li><strong>Class B</strong> — Hazardous</li>
+      <li><strong>Class C</strong> — Immediately hazardous</li>
+    </ul>
+  </div>
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Resolution status</div>
+    <ul class="viol-meta-list">
+      <li><span class="status-pill open">OPEN</span> Active on record (~1,063,122)</li>
+      <li><span class="status-pill closed">CLOSED</span> Verified corrected (~1,253,582)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="part-divider" id="violations">
+  <div class="part-divider-label">Part II</div>
+  <div class="part-divider-title">From Complaint to Violation</div>
+</div>
+
+<!-- CHAPTER 04 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">04</span> When the System Responds</div>
+  <h2 class="story-h2">From Words to Violations:<em> When the City Confirms the Crisis</em></h2>
+  <p class="story-body">A complaint is an SOS; a violation is the city's official confirmation that
+     a home is unsafe. Surprisingly, violation counts actually outpace complaints in every borough—often
+     because one inspector's visit reveals a cascade of secondary issues.</p>
+</div>
+
+<!-- FIG. 4 — Violations map -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 4 — The Geography of Violations</div>
+    <div class="chart-subtitle">Concentration of violations by Zip Code</div>
+    <iframe
+      src="visualizations/violations/zip_violations_map.html"
+      title="Map of NYC Housing Violations by Zip Code"
+      width="100%"
+      height="580px"
+      style="border:none; margin-top: 5px;"
+      loading="lazy">
+    </iframe>
+    <p class="chart-note">Source: NYC Open Data — HPD Violations. Includes all Class A, B, and C violations issued between 2021 and 2025.</p>
+  </div>
+
+  <div class="callout-row two-col">
+    <div class="callout red">
+      <div class="callout-val red">The Bronx</div>
+      <div class="callout-desc">The Bronx consistently records the highest violation density city-wide,
+        with 926 violations per 1,000 residents.</div>
+    </div>
+    <div class="callout green">
+      <div class="callout-val">Top Hotspots</div>
+      <div class="callout-desc">The zip codes with the most violations mirror those with the most complaints,
+         10452, 10457, and 10458 in the Bronx, alongside <strong>11226 in Flatbush, Brooklyn</strong>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 05 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">05</span> Severity by Severity</div>
+  <h2 class="story-h2">The Anatomy of the Violations: <em>Category by Category</em></h2>
+  <p class="story-body">HPD classifies violations into three tiers: Class A covers non-hazardous
+    maintenance issues, Class B covers hazardous conditions, and Class C covers immediately hazardous
+    situations, like no heat in winter, gas leaks, or structural instability that pose a direct threat to life.</p>
+</div>
+
+<!-- FIG. 5 — Violations by class (images) -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 5 — Violations by Class and Borough</div>
+    <div class="chart-subtitle">Select a class to see borough-level trends (2021–2025)</div>
+    <div class="tab-container">
+      <button class="map-tab active" onclick="switchImage(this, 'viol-img', 'visualizations/violations/violationA.png')">Class A — Non-hazardous</button>
+      <button class="map-tab" onclick="switchImage(this, 'viol-img', 'visualizations/violations/violationB.png')">Class B — Hazardous</button>
+      <button class="map-tab" onclick="switchImage(this, 'viol-img', 'visualizations/violations/violationC.png')">Class C — Immediately hazardous</button>
+    </div>
+    <div class="map-viewport-wrapper">
+      <img id="viol-img" src="visualizations/violations/violationA.png" alt="Violation trend chart by class and borough">
+    </div>
+    <p class="chart-note">Source: NYC Open Data. Toggle to compare violation severity classes by borough over time.</p>
+  </div>
+
+  <div class="callout-row">
+    <div class="callout red">
+      <div class="callout-val red">The Bronx</div>
+      <div class="callout-desc">The Bronx increases drastically across all violation classes, while the other
+        boroughs show more moderate increases.</div>
+    </div>
+    <div class="callout green">
+      <div class="callout-val">Class A</div>
+      <div class="callout-desc">This is the only class where the Bronx does not lead in violation density. Instead
+        it is surpassed by Brooklyn.</div>
+    </div>
+    <div class="callout amber">
+      <div class="callout-val">Staten Island</div>
+      <div class="callout-desc">Staten Island shows a relatively low violation density compared to the other boroughs.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 05b -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">05</span> Where Violations Concentrate</div>
+  <h2 class="story-h2">Violations, like complaints, do not fall <em>evenly</em> across the city.</h2>
+  <p class="story-body">Mapping violations at the zip code level reveals the same geographic fault lines seen
+  in the complaints data. The Bronx and northern Brooklyn carry a disproportionate share of the city's formal
+  housing violations across all classes.</p>
+</div>
+
+<!-- FIG. 5b — Violations vs income maps -->
+<div class="chart-area wide">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 5 — Geographic Distribution of Violations</div>
+    <div class="chart-subtitle">Select a violation class to compare with median household income (2021–2025)</div>
+    <div class="tab-container">
+      <button class="map-tab active" onclick="switchFrame(this, 'viol-map', 'visualizations/violations/zip_violA_map.html')">Class A</button>
+      <button class="map-tab" onclick="switchFrame(this, 'viol-map', 'visualizations/violations/zip_violB_map.html')">Class B</button>
+      <button class="map-tab" onclick="switchFrame(this, 'viol-map', 'visualizations/violations/zip_violC_map.html')">Class C</button>
+    </div>
+    <div class="map-compare-grid">
+      <div>
+        <div class="map-compare-label">Violations by zip code</div>
+        <div class="map-compare-frame">
+          <iframe
+            id="viol-map"
+            src="visualizations/violations/zip_violA_map.html"
+            title="Violations map by zip code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+      <div>
+        <div class="map-compare-label">Median household income</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/nyc_income_map.html"
+            title="Map of NYC Median Household Income by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">Source: NYC Open Data. Toggle to compare violation severity classes against income distribution across zip codes.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ PART III — DAYS TO CLOSE -->
+<div class="viol-metrics-strip" style="grid-template-columns: repeat(2, 1fr);">
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Certified Violations</div>
+    <div class="viol-metric-num" style="font-size: 1.4rem;">Median time: 30 days across all ZIPs</div>
+    <div class="metric-ctx">Range 8–107 days</div>
+  </div>
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Open violations with no certified date</div>
+    <div class="viol-metric-num" style="font-size: 1.4rem;">Median days: 713 days</div>
+    <div class="metric-ctx">Range: 124–1,526 days</div>
+  </div>
+</div>
+<div class="part-divider" id="days">
+  <div class="part-divider-label">Part III</div>
+  <div class="part-divider-title">Days to Close Violations</div>
+</div>
+
+<!-- CHAPTER 06 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">06</span> The Waiting Game</div>
+  <h2 class="story-h2">Getting a violation on record is one thing. <em>Getting it fixed</em> is another.</h2>
+  <p class="story-body">Once a violation is issued, the clock starts ticking — but in many parts of the city,
+    it never seems to stop. The map below shows the average number of days a violation remains open before any resolution. Across the board, lower-income zip codes see violations linger significantly longer than wealthier areas, even for the most dangerous Class C cases that pose an immediate risk to residents.</p>
+  <p class="story-body">This gap reveals a second layer of inequity: it is not only that poor neighbourhoods receive more violations, but that those violations are left to
+    fester for longer. The burden of an unresolved hazard falls entirely on the tenant while the system stalls.</p>
+</div>
+
+<!-- FIG. 6 — Days open maps tabbed -->
+<div class="chart-area wide">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 6 — How Long Do Violations Stay Open?</div>
+    <div class="chart-subtitle">Average days a violation remains unresolved, by zip code (2021–2025)</div>
+    <div class="tab-container">
+      <button class="map-tab active" onclick="switchFrame(this, 'open-map', 'visualizations/zip_open_all.html')">All Classes</button>
+      <button class="map-tab" onclick="switchFrame(this, 'open-map', 'visualizations/zip_open_c.html')">Class C (immediately hazardous)</button>
+    </div>
+    <div class="map-compare-grid">
+      <div>
+        <div class="map-compare-label">Avg. days violation stays open</div>
+        <div class="map-compare-frame">
+          <iframe
+            id="open-map"
+            src="visualizations/zip_open_all.html"
+            title="Average days open by zip code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+      <div>
+        <div class="map-compare-label">Median household income</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/nyc_income_map.html"
+            title="Map of NYC Median Household Income by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">Source: NYC Open Data — HPD Violations. Days open calculated from inspection date to certification date, or to present for unresolved violations. Darker shading indicates longer average resolution times.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 07 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">07</span> Closing the Loop</div>
+  <h2 class="story-h2">Both complaints and violations are deeply related to socioeconomic factors. But
+    does the time it takes to resolve a violation also track with income?
+  </h2>
+  <p class="story-body">For violations that eventually get certified as corrected, the time between inspection and official closure varies dramatically across the city.
+    This chart focuses only on closed violations — meaning cases where a fix was confirmed — and asks a simple question: how many days did that take?</p>
+  <p class="story-body">The answer, again, tracks closely with income. In lower-income zip codes, even resolved violations take significantly longer to certify. This could
+    reflect landlord delays, slower HPD re-inspection schedules, or both — but the outcome is the same: tenants in the poorest neighbourhoods wait the longest for their homes to be officially declared safe, even after a fix has supposedly been made.</p>
+</div>
+
+<!-- FIG. 7 — Days to certify maps tabbed -->
+<div class="chart-area wide">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 7 — How Long Does It Take to Close a Violation?</div>
+    <div class="chart-subtitle">Average days to certify a resolved violation, by zip code (2021–2025)</div>
+    <div class="tab-container">
+      <button class="map-tab active" onclick="switchFrame(this, 'days-map', 'visualizations/zip_days_all.html')">All Classes</button>
+      <button class="map-tab" onclick="switchFrame(this, 'days-map', 'visualizations/zip_days_C.html')">Class C (immediately hazardous)</button>
+    </div>
+    <div class="map-compare-grid">
+      <div>
+        <div class="map-compare-label">Avg. days to certify closure</div>
+        <div class="map-compare-frame">
+          <iframe
+            id="days-map"
+            src="visualizations/zip_days_all.html"
+            title="Average days to certify by zip code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+      <div>
+        <div class="map-compare-label">Median household income</div>
+        <div class="map-compare-frame">
+          <iframe
+            src="visualizations/nyc_income_map.html"
+            title="Map of NYC Median Household Income by Zip Code"
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">Source: NYC Open Data — HPD Violations. Days to certify measured from inspection date to official certification of correction, for closed violations only. Darker shading indicates slower resolution.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ PART IV — LANDLORDS -->
+<div class="viol-metrics-strip">
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Worst offenders</div>
+    <div class="viol-metric-num">75</div>
+    <div class="metric-ctx">Owners responsible for 20% of all violations city-wide</div>
+  </div>
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Registrations linked</div>
+    <div class="viol-metric-num">872</div>
+    <div class="metric-ctx">Unique building registration IDs tied to those 75 owners</div>
+  </div>
+  <div class="viol-metric-block">
+    <div class="viol-metric-lbl">Owner types</div>
+    <ul class="viol-meta-list">
+      <li><strong>Corporate Owners</strong> — LLCs and property companies</li>
+      <li><strong>Shareholders</strong> — Co-op and condo structures</li>
+      <li><strong>Individual Owners</strong> — Named private landlords</li>
+    </ul>
+  </div>
+</div>
+
+<div class="part-divider" id="landlords">
+  <div class="part-divider-label">Part IV</div>
+  <div class="part-divider-title">The Landlords</div>
+</div>
+
+<!-- CHAPTER 08 -->
+<div class="story-section">
+  <div class="chapter-label"><span class="chapter-num">08</span> Who Is Responsible?</div>
+  <h2 class="story-h2">Behind every violation is a building. Behind every building is <em>an owner.</em></h2>
+  <p class="story-body">Violations do not occur randomly — they cluster. A small number of landlords are responsible for a disproportionate share of the city's housing hazards.
+     Just 75 owners account for roughly 20% of all violations recorded between 2021 and 2025, controlling 872 registered buildings across the five boroughs.</p>
+  <p class="story-body">These repeat offenders span all three ownership types: anonymous LLCs that obscure accountability, shareholders in co-op structures, and
+    named individual landlords. The pattern is consistent — concentrated ownership, concentrated neglect, and concentrated harm falling on the same low-income communities
+    that already bear the heaviest complaint and violation burdens.</p>
+</div>
+
+<!-- FIG. 8 — Owners table -->
+<div class="chart-area">
+  <div class="chart-wrap">
+    <div class="chart-title">Fig. 8 — The Worst Offenders</div>
+    <div class="chart-subtitle">Top landlords ranked by total buildings with violations (2021–2025)</div>
+    <div style="overflow-x: auto; margin-top: 8px;">
+      <iframe
+        src="visualizations/owners_table.html"
+        title="Top landlords by violation count"
+        width="100%"
+        height="520px"
+        style="border: none;"
+        loading="lazy">
+      </iframe>
+    </div>
+    <p class="chart-note">Source: NYC Open Data — HPD Registrations. Owners identified by shared registration IDs across multiple buildings. Income category reflects the zip code classification of each building in their portfolio.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CONCLUSION -->
+<div class="conclusion" id="conclusion">
+  <div class="conclusion-inner">
+    <div class="conclusion-label">Findings</div>
+    <h2 class="conclusion-h2">A city of <em>unequal</em> shelter</h2>
+    <p class="conclusion-body">The data tells a story the skyline does not. Housing distress in New York City is not random — it maps almost perfectly onto existing lines of race, income, and borough. The Bronx carries a disproportionate burden of complaints; Queens and Staten Island struggle to close the violations they have. Across the city, nearly one in three formal violations issued since 2021 remains open today.</p>
+    <p class="conclusion-body">The HPD system is not broken — inspectors come, violations are issued, many are closed. But for hundreds of thousands of families, the machinery of protection moves too slowly, and the consequences of waiting are measured in cold winters, spreading mold, and structural decay.</p>
+    <a class="notebook-link" href="#" target="_blank">→ View the full analysis notebook</a>
+  </div>
+</div>
+
+<footer>
+  <p>NYC Open Data · HPD Service Requests &amp; Violations · 2021–2025</p>
+  <p>Maria Vendas &amp; Diogo Forte · DTU Final Project</p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════ SCRIPT -->
+<script>
+function switchImage(btn, imgId, src) {
+  var el = document.getElementById(imgId);
+  if (!el) return;
+  el.style.opacity = '0';
+  setTimeout(function () {
+    el.src = src;
+    el.onload = function () { el.style.opacity = '1'; };
+    setTimeout(function () { el.style.opacity = '1'; }, 600);
+  }, 200);
+  activateTab(btn);
+}
+
+function switchFrame(btn, frameId, src) {
+  var el = document.getElementById(frameId);
+  if (!el) return;
+  el.style.opacity = '0';
+  setTimeout(function () {
+    el.src = src;
+    el.onload = function () { el.style.opacity = '1'; };
+    setTimeout(function () { el.style.opacity = '1'; }, 1500);
+  }, 200);
+  activateTab(btn);
+}
+
+function activateTab(btn) {
+  var siblings = btn.closest('.tab-container').querySelectorAll('.map-tab');
+  siblings.forEach(function (t) { t.classList.remove('active'); });
+  btn.classList.add('active');
+}
+</script>
+
+</body>
+</html>
